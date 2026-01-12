@@ -1,0 +1,16 @@
+services:
+  notifypit:
+    build: .
+    ports:
+      - "4567:4567"
+    environment:
+      - APP_ENV=development
+
+  # This runs the harness against the container
+  harness:
+    build: .
+    depends_on:
+      - notifypit
+    environment:
+      - NOTIFY_PIT_URL=http://notifypit:4567
+    command: ["bundle", "exec", "rspec", "spec/notify_pit_spec.rb"]
