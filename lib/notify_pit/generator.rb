@@ -11,7 +11,7 @@ module NotifyPit
     end
 
     def self.body(username, password)
-      <<~TEXT
+      <<~HTML
         Your GovWifi details are:
         Username:
         #{username}
@@ -20,7 +20,7 @@ module NotifyPit
         Your password is case-sensitive with no spaces between words.
 
         Go to your wifi settings, select 'GovWifi' and enter your details.
-      TEXT
+      HTML
     end
   end
 end
