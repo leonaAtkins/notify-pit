@@ -23,7 +23,7 @@ module NotifyPit
       @notifications[id] = build_entry(id, type, payload, user, pass)
     end
 
-  def add_inbound_sms(payload)
+    def add_inbound_sms(payload)
       msg = {
         'id' => SecureRandom.uuid,
         'content' => payload['content'],

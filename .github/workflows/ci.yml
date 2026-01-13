@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ development, main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ development, main ]
 
 jobs:
 
@@ -26,4 +26,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Tests in Docker
-        run: make dc-test
+        run: make test

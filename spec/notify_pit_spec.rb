@@ -40,14 +40,16 @@ RSpec.describe 'NotifyPit' do
     end
 
     it 'allows polling of received text messages' do
-      post_json '/mocker/inbound-sms', { content: 'WiFi', phone_number: '07700900001' }
+      post_json '/mocker/inbound-sms', { content: 'test 1', phone_number: '07700900001' }
+      post_json '/mocker/inbound-sms', { content: 'test 2', phone_number: '07700900002' }
       get '/v2/received-text-messages'
 
       expect(last_response.status).to eq(200)
       msgs = JSON.parse(last_response.body)['received_text_messages']
 
       expect(msgs).not_to be_empty
-      expect(msgs.first['content']).to eq('WiFi')
+      expect(msgs.first['content']).to eq('test 1')
+      expect(msgs.length).to eq(2)
     end
   end
 

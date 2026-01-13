@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
 gem 'json'
-gem 'puma'
+gem 'puma'   # Production-grade server for Docker
+gem 'rackup' # Required for Sinatra 3.0+ / Ruby 3.0+
 gem 'sinatra'
 
 group :test, :development do
