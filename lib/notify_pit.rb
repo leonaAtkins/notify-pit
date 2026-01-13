@@ -59,7 +59,7 @@ module NotifyPit
       ''
     end
 
-  # Management API (For Smoke Test Orchestration)
+    # Management API (For Smoke Test Orchestration)
     post '/mocker/inbound-sms' do
       # CHANGE THIS LINE:
       msg = DB.add_inbound_sms(JSON.parse(request.body.read))
