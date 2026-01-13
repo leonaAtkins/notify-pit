@@ -11,7 +11,7 @@ local-test: ## Run tests locally with coverage
 local-lint: ## Run RuboCop linter locally
 	bundle exec rubocop -A
 
-local-run: ## Run NotifyPit locally on port 4567
+local-serve: ## Run NotifyPit locally on port 4567
 	bundle exec ruby -Ilib -rnotify_pit -e "NotifyPit::App.run!(port: 4567, bind: '0.0.0.0')"
 
 # --- Docker Commands ---

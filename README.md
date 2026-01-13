@@ -17,15 +17,15 @@
 ### 1. Run with Docker
 The most reliable way to start NotifyPit is via the provided Makefile:
 ```bash
-make dc-up
+make serve
 ```
 The service will be available at `http://localhost:4567`.
 
 ### 2. Run Locally (Ruby 4.0.0+)
 If you have Ruby installed locally:
 ```bash
-make build
-make run
+make local-build
+make local-serve
 ```
 
 ---
@@ -76,9 +76,9 @@ This project enforces high code quality via the following Docker-based commands:
 
 | Command | Action |
 | :--- | :--- |
-| `make dc-lint` | Runs RuboCop to ensure style compliance. |
-| `make dc-test` | Runs RSpec and generates a coverage report (>85% required). |
-| `make dc-down` | Stops and removes all containers and networks. |
+| `make lint` | Runs RuboCop to ensure style compliance. |
+| `make test` | Runs RSpec and generates a coverage report (>85% required). |
+| `make clean` | Stops and removes all containers and networks. |
 
 
 
