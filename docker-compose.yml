@@ -1,0 +1,25 @@
+services:
+  notifypit:
+    build: .
+    ports:
+      - "4567:4567"
+    environment:
+      - RACK_ENV=test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4567/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  test:
+    build: .
+    depends_on:
+      notifypit:
+        condition: service_healthy
+    environment:
+      - RACK_ENV=test
+    command: ["bundle", "exec", "rspec"]
+
+  lint:
+    build: .
+    command: ["bundle", "exec", "rubocop"]
