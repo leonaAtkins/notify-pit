@@ -1,22 +1,44 @@
-.PHONY: build run stop test clean help
+.PHONY: build test lint run dc-build dc-test dc-lint dc-up clean help
 
-help: ## Show this help message
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# --- Local Development Commands (Requires Ruby 4.0.0 locally) ---
 
-build: ## Build the Docker containers
+local-install: ## Install gems locally
+	bundle install
+
+local-test: ## Run tests locally with coverage
+	bundle exec rspec
+
+local-lint: ## Run RuboCop linter locally
+	bundle exec rubocop -A
+
+local-run: ## Run NotifyPit locally on port 4567
+	bundle exec ruby -Ilib -rnotify_pit -e "NotifyPit::App.run!(port: 4567, bind: '0.0.0.0')"
+
+# --- Docker Commands ---
+
+build: ## Build Docker images
 	docker compose build
 
-run: ## Start NotifyPit locally on port 4567
+serve: ## Run NotifyPit in Docker
 	docker compose up notifypit
 
-stop: ## Stop all services
-	docker compose down
+test: build ## Run tests inside Docker
+	docker compose run --rm test
 
-test: ## Run the test harness inside Docker
-	docker compose run --rm harness
+lint: ## Run linter inside Docker
+	docker compose run --rm lint
 
-local-test: ## Run tests locally (requires bundle install)
-	bundle exec rspec spec/notify_pit_spec.rb
+stop: ## Stop Docker containers without removing them
+	docker compose stop
 
-clean: ## Remove docker containers and volumes
-	docker compose down --volumes --remove-orphans
+remove: ## Stop and remove Docker containers, networks, and images
+	docker compose down --remove-orphans
+
+# --- Utility ---
+
+clean: remove ## Clean up local coverage, cache, and Docker resources
+	rm -rf coverage .simplecov .rubocop_cache
+	docker system prune -f --volumes
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'

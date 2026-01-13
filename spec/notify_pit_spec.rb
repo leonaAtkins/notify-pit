@@ -1,42 +1,68 @@
-require 'rspec'
-require 'rack/test'
-require_relative 'app/notify_pit'
+require 'spec_helper'
 
-RSpec.describe 'NotifyPit Harness' do
-  include Rack::Test::Methods
-  def app; Sinatra::Application; end
-
-  before { delete '/mocker/reset' }
-
-  it 'mocks email notifications' do
-    post '/v2/notifications/email', {
-      email_address: 'user@example.com',
-      template_id: 'email-temp-1',
-      personalisation: { link: 'http://login.gov' }
-    }.to_json
-
-    expect(last_response.status).to eq(201)
-
-    get '/mocker/messages'
-    messages = JSON.parse(last_response.body)
-    expect(messages.first['to']).to eq('user@example.com')
-    expect(messages.first['type']).to eq('email')
+RSpec.describe 'NotifyPit' do
+  # Helper for sending JSON
+  def post_json(path, hash)
+    post path, hash.to_json, { 'CONTENT_TYPE' => 'application/json' }
   end
 
-  it 'mocks sms notifications' do
-    post '/v2/notifications/sms', {
-      phone_number: '07700900000',
-      template_id: 'sms-temp-1'
-    }.to_json
-
-    expect(last_response.status).to eq(201)
-    expect(JSON.parse(last_response.body)['id']).not_to be_nil
+  before(:each) do
+    delete '/mocker/reset'
   end
 
-  it 'supports inbound SMS simulation' do
-    post '/mocker/inbound-sms', { phone_number: '07700900000', content: 'WiFi' }.to_json
+  describe 'Standard Notify API' do
+    it 'captures SMS and generates GovWifi body pattern' do
+      post_json '/v2/notifications/sms', {
+        phone_number: '07700900000',
+        template_id: 'sms-temp'
+      }
 
-    get '/v2/received-text-messages'
-    expect(JSON.parse(last_response.body)['received_text_messages'].length).to eq(1)
+      expect(last_response.status).to eq(201)
+      resp = JSON.parse(last_response.body)
+      expect(resp['content']['body']).to include('Your GovWifi details are:')
+      expect(resp['content']['body']).to match(/Username:\n[a-z]{6}/)
+    end
+
+    it 'captures Email and returns HTML content' do
+      post_json '/v2/notifications/email', {
+        email_address: 'test@example.com',
+        template_id: 'email-temp'
+      }
+
+      expect(last_response.status).to eq(201)
+      resp = JSON.parse(last_response.body)
+      expect(resp['content']).to have_key('html')
+    end
+
+    it 'returns 404 for missing notifications' do
+      get '/v2/notifications/invalid-id'
+      expect(last_response.status).to eq(404)
+    end
+
+    it 'allows polling of received text messages' do
+      post_json '/mocker/inbound-sms', { content: 'WiFi', phone_number: '07700900001' }
+      get '/v2/received-text-messages'
+
+      expect(last_response.status).to eq(200)
+      msgs = JSON.parse(last_response.body)['received_text_messages']
+
+      expect(msgs).not_to be_empty
+      expect(msgs.first['content']).to eq('WiFi')
+    end
+  end
+
+  describe 'Management API' do
+    it 'resets the data stores' do
+      post_json '/v2/notifications/sms', { phone_number: '07700', template_id: '1' }
+      delete '/mocker/reset'
+
+      get '/mocker/messages'
+      expect(JSON.parse(last_response.body).length).to eq(0)
+    end
+
+    it 'provides a health check' do
+      get '/health'
+      expect(last_response.status).to eq(200)
+    end
   end
 end

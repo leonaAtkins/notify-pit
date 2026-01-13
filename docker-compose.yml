@@ -4,13 +4,22 @@ services:
     ports:
       - "4567:4567"
     environment:
-      - APP_ENV=development
+      - RACK_ENV=test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4567/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # This runs the harness against the container
-  harness:
+  test:
     build: .
     depends_on:
-      - notifypit
+      notifypit:
+        condition: service_healthy
     environment:
-      - NOTIFY_PIT_URL=http://notifypit:4567
-    command: ["bundle", "exec", "rspec", "spec/notify_pit_spec.rb"]
+      - RACK_ENV=test
+    command: ["bundle", "exec", "rspec"]
+
+  lint:
+    build: .
+    command: ["bundle", "exec", "rubocop"]

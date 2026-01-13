@@ -1,12 +1,16 @@
 source 'https://rubygems.org'
 
-gem 'sinatra'
-gem 'puma'
 gem 'json'
+gem 'puma'
+gem 'sinatra'
 
 group :test, :development do
-  gem 'rspec'
+  gem 'faraday' # For testing the running service
   gem 'rack-test'
   gem 'rake'
-  gem 'faraday' # For testing the running service
+  gem 'rspec'
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
+  gem 'simplecov', require: false
+  gem 'simplecov-console', require: false
 end
