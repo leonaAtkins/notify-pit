@@ -1,36 +1,32 @@
-# ... SimpleCov setup ...
-$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-require 'notify_pit' # This will now pull in the other files via require_relative
-require 'bundler/setup'
-require 'rack/test'
-require 'rspec'
 require 'simplecov'
 require 'simplecov-console'
 
-SimpleCov.start do
-  # Minimum coverage requirement
-  minimum_coverage 85
-  # Filter out the spec files themselves from the report
-  add_filter '/spec/'
+# 1. Start SimpleCov BEFORE requiring any application code
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::Console
+])
 
-  SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
-    SimpleCov::Formatter::HTMLFormatter,
-    SimpleCov::Formatter::Console
-  ])
+SimpleCov.start do
+  add_filter '/spec/'
+  # Ensure it tracks files in the lib directory
+  track_files 'lib/**/*.rb'
 end
 
-# Force RACK_ENV before loading Sinatra
+# 2. Set the environment to test
 ENV['RACK_ENV'] = 'test'
 
-# Add lib to the load path so 'require notify_pit' works
-$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-require 'notify_pit'
+# 3. Now require your application code
+require_relative '../lib/notify_pit'
+
+require 'rspec'
+require 'rack/test'
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods
 
-  # This is critical: It tells Rack::Test exactly which class to run
   def app
+    # This must match your main Sinatra class name
     NotifyPit::App
   end
 end

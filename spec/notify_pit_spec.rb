@@ -19,6 +19,7 @@ RSpec.describe 'NotifyPit' do
 
       expect(last_response.status).to eq(201)
       resp = JSON.parse(last_response.body)
+      expect(resp['id']).not_to be_empty
       expect(resp['content']['body']).to include('Your GovWifi details are:')
       expect(resp['content']['body']).to match(/Username:\n[a-z]{6}/)
     end

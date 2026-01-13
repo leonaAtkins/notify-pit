@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'time'
 
 module NotifyPit
   class Store
@@ -20,16 +21,21 @@ module NotifyPit
       user = p['username'] || Generator.username
       pass = p['password'] || Generator.password
 
-      @notifications[id] = build_entry(id, type, payload, user, pass)
+      entry = build_entry(id, type, payload, user, pass)
+      @notifications[id] = entry
+      entry
     end
 
     def add_inbound_sms(payload)
+      # Generates metadata that the smoke tests poll for, including a UUID id
+      # and high-precision created_at to avoid timestamp collisions.
       msg = {
         'id' => SecureRandom.uuid,
         'content' => payload['content'],
         'user_number' => payload['phone_number'],
         'notify_number' => '60022',
-        'created_at' => Time.now.iso8601
+        'service_id' => 'fa80e418-ff49-445c-a29b-92c04a181207',
+        'created_at' => Time.now.utc.iso8601(6)
       }
       @inbound_sms << msg
       msg
@@ -39,11 +45,13 @@ module NotifyPit
 
     def build_entry(id, type, payload, user, pass)
       {
-        'id' => id, 'type' => type,
+        'id' => id,
+        'type' => type,
         'to' => type == 'sms' ? payload['phone_number'] : payload['email_address'],
         'body' => Generator.body(user, pass),
         'personalisation' => { 'username' => user, 'password' => pass },
-        'status' => 'delivered', 'created_at' => Time.now.iso8601,
+        'status' => 'delivered',
+        'created_at' => Time.now.utc.iso8601(6),
         'template_id' => payload['template_id']
       }
     end
