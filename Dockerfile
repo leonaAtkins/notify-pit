@@ -1,8 +1,7 @@
 FROM ruby:4.0.0-alpine
 
 # Install build dependencies for gems like Puma and RuboCop
-RUN apk add --update --no-cache build-base
-
+RUN apk add --update --no-cache build-base curl
 WORKDIR /usr/src/app
 
 # Install dependencies

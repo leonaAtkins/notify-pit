@@ -3,6 +3,8 @@ source 'https://rubygems.org'
 gem 'json'
 gem 'puma'
 gem 'sinatra'
+gem 'rackup' # Required for Sinatra 3.0+ / Ruby 3.0+
+gem 'puma'   # Production-grade server for Docker
 
 group :test, :development do
   gem 'faraday' # For testing the running service
