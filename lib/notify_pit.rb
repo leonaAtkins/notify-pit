@@ -6,6 +6,8 @@ require_relative 'notify_pit/store'
 module NotifyPit
   class App < Sinatra::Base
     configure do
+      set :bind, '0.0.0.0'
+      set :port, 4567
       set :environment, :test
       disable :protection
       enable :logging
