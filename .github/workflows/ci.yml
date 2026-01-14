@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ development, main ]
+  pull_request:
+    branches: [ development, main ]
+
+jobs:
+
+  # Job 1 Docker Integration Test
+  # This ensures the code is correctly formatted
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Linter in Docker
+        run: make lint
+
+  # Job 2 Docker Integration Test
+  # This ensures the container actually builds and runs in a real environment
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Tests in Docker
+        run: make test
