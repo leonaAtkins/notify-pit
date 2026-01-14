@@ -1,7 +1,7 @@
 module NotifyPit
   class Generator
     WORDS = %w[Dog Cat Fox Bear Lion Tiger Wolf Fish Bird Frog Owl Deer].freeze
-    ACCOUNT_REMOVED_TEMPLATE_ID = "user_account_removed_sms"
+    ACCOUNT_REMOVED_TEMPLATE_ID = 'user_account_removed_sms'.freeze
 
     def self.username
       Array.new(6) { ('a'..'z').to_a.sample }.join
@@ -12,7 +12,7 @@ module NotifyPit
     end
 
     def self.body(template_id, username, password)
-      puts ("Generator body called with template_id: #{template_id}")
+      puts("Generator body called with template_id: #{template_id}")
       if template_id == ACCOUNT_REMOVED_TEMPLATE_ID
         <<~HTML
           Your GovWifi username and password has been removed. You won't be able to connect to GovWifi with your old credentials

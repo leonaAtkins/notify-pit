@@ -17,10 +17,8 @@ module NotifyPit
       # This will show up in your CodeBuild/Docker logs
       puts "--> #{request.request_method} #{request.path}"
       body_content = request.body&.read
-      if body_content && !body_content.empty?
-        puts "    Body: #{body_content}"
-      end
-        request.body&.rewind
+      puts "    Body: #{body_content}" if body_content && !body_content.empty?
+      request.body&.rewind
     end
 
     # Use a class-level instance of the store
@@ -32,22 +30,22 @@ module NotifyPit
 
       # Pass the hash directly to the store
       note = DB.add_notification('sms', request_payload)
-      #note = DB.add_notification('sms', JSON.parse(request.body.read))
+      # NOTE: = DB.add_notification('sms', JSON.parse(request.body.read))
       json_res({
-          id: note['id'],
-          content: { body: note['body'], from_number: 'GovWifi' },
-          template: { id: note['template_id'], version: 1 }
-        }, 201)
+                 id: note['id'],
+                 content: { body: note['body'], from_number: 'GovWifi' },
+                 template: { id: note['template_id'], version: 1 }
+               }, 201)
     end
 
     post '/v2/notifications/email' do
       note = DB.add_notification('email', JSON.parse(request.body.read))
       json_res({
-          id: note['id'],
-          content: { body: note['body'], subject: 'GovWifi details',
-                    html: "<p>#{note['body'].gsub("\n", '<br>')}</p>" },
-          template: { id: note['template_id'], version: 1 }
-        }, 201)
+                 id: note['id'],
+                 content: { body: note['body'], subject: 'GovWifi details',
+                            html: "<p>#{note['body'].gsub("\n", '<br>')}</p>" },
+                 template: { id: note['template_id'], version: 1 }
+               }, 201)
     end
 
     get '/v2/notifications/:id' do
@@ -80,6 +78,7 @@ module NotifyPit
       status 200
       'OK'
     end
+
     private
 
     def json_res(data, code = 200)
