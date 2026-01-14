@@ -20,7 +20,7 @@ build: ## Build Docker images
 	docker compose build
 
 serve: ## Run NotifyPit in Docker
-	docker compose up notifypit
+	docker compose up notifypit -d
 
 test: build ## Run tests inside Docker
 	docker compose run --rm test
