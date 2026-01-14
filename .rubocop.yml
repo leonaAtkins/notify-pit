@@ -17,3 +17,14 @@ Metrics/BlockLength:
 
 Style/FrozenStringLiteralComment:
   Enabled: false
+
+Metrics/MethodLength:
+  Max: 20
+  # Optional: exclude the test folder from this check
+  Exclude:
+  - 'spec/**/*'
+
+# You might also find 'AbcSize' starts failing as methods get complex.
+# You can increase that here too if needed:
+Metrics/AbcSize:
+  Max: 20

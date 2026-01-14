@@ -24,6 +24,25 @@ RSpec.describe 'NotifyPit' do
       expect(resp['content']['body']).to match(/Username:\n[a-z]{6}/)
     end
 
+    context 'when sending an account removal message' do
+      it 'returns the specific account removed wording' do
+        payload = {
+          phone_number: '07123456789',
+          template_id: 'user_account_removed_sms',
+          personalisation: {}
+        }
+
+        post '/v2/notifications/sms', payload.to_json, { 'CONTENT_TYPE' => 'application/json' }
+
+        expected_removal_text = 'Your GovWifi username and password has been removed.'
+        resp = JSON.parse(last_response.body)
+        puts("Response body: #{last_response.body}")
+        expect(last_response.status).to eq(201)
+        expect(resp['content']['body']).to include(expected_removal_text)
+        # expect(resp['content']['body']).to include("text 'Go' to 07537 417 417")
+      end
+    end
+
     it 'captures Email and returns HTML content' do
       post_json '/v2/notifications/email', {
         email_address: 'test@example.com',

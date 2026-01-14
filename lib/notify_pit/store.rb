@@ -10,50 +10,51 @@ module NotifyPit
       @inbound_sms = []
     end
 
-    def reset!
-      @notifications.clear
-      @inbound_sms.clear
-    end
-
     def add_notification(type, payload)
       id = SecureRandom.uuid
-      p = payload['personalisation'] || {}
-      user = p['username'] || Generator.username
-      pass = p['password'] || Generator.password
 
-      entry = build_entry(id, type, payload, user, pass)
+      # Extract data from JSON payload
+      template_id = payload['template_id']
+      personalisation = payload['personalisation'] || {}
+
+      # Determine username/password
+      user = personalisation['username'] || Generator.username
+      pass = personalisation['password'] || Generator.password
+
+      # Use the Generator logic
+      message_body = Generator.body(template_id, user, pass)
+
+      entry = {
+        'id' => id,
+        'type' => type,
+        'to' => type == 'sms' ? payload['phone_number'] : payload['email_address'],
+        'body' => message_body,
+        'template_id' => template_id,
+        'personalisation' => { 'username' => user, 'password' => pass },
+        'status' => 'delivered',
+        'created_at' => Time.now.utc.iso8601(6)
+      }
+
       @notifications[id] = entry
       entry
     end
 
+    # Restored method to fix the NoMethodError
     def add_inbound_sms(payload)
-      # Generates metadata that the smoke tests poll for, including a UUID id
-      # and high-precision created_at to avoid timestamp collisions.
-      msg = {
+      entry = {
         'id' => SecureRandom.uuid,
+        'user_number' => payload['user_number'],
+        'notify_number' => payload['notify_number'],
         'content' => payload['content'],
-        'user_number' => payload['phone_number'],
-        'notify_number' => '60022',
-        'service_id' => 'fa80e418-ff49-445c-a29b-92c04a181207',
         'created_at' => Time.now.utc.iso8601(6)
       }
-      @inbound_sms << msg
-      msg
+      @inbound_sms << entry
+      entry
     end
 
-    private
-
-    def build_entry(id, type, payload, user, pass)
-      {
-        'id' => id,
-        'type' => type,
-        'to' => type == 'sms' ? payload['phone_number'] : payload['email_address'],
-        'body' => Generator.body(user, pass),
-        'personalisation' => { 'username' => user, 'password' => pass },
-        'status' => 'delivered',
-        'created_at' => Time.now.utc.iso8601(6),
-        'template_id' => payload['template_id']
-      }
+    def reset!
+      @notifications = {}
+      @inbound_sms = []
     end
   end
 end
