@@ -81,14 +81,14 @@ module NotifyPit
     end
 
     get '/health' do
-      puts ">>> HEALTH CHECK ACCESSED BY AGENT <<<"
+      puts '>>> HEALTH CHECK ACCESSED BY AGENT <<<'
       status 200
       'OK'
     end
 
     not_found do
       puts "[MOCK 404] No route matches: #{request.request_method} #{request.path}"
-      json_res({ error: "Route not found", path: request.path }, 404)
+      json_res({ error: 'Route not found', path: request.path }, 404)
     end
 
     private
