@@ -1,3 +1,6 @@
+$stdout.sync = true
+$stderr.sync = true
+
 require 'sinatra/base'
 require_relative 'notify_pit/generator'
 require_relative 'notify_pit/store'
@@ -13,6 +16,7 @@ module NotifyPit
       enable :logging
       # This ensures logs are flushed immediately to Docker logs
       $stdout.sync = true
+      use Rack::CommonLogger, $stdout
     end
 
     before do
@@ -77,8 +81,14 @@ module NotifyPit
     end
 
     get '/health' do
+      puts ">>> HEALTH CHECK ACCESSED BY AGENT <<<"
       status 200
       'OK'
+    end
+
+    not_found do
+      puts "[MOCK 404] No route matches: #{request.request_method} #{request.path}"
+      json_res({ error: "Route not found", path: request.path }, 404)
     end
 
     private
