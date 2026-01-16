@@ -27,7 +27,7 @@ module NotifyPit
       entry = {
         'id' => id,
         'type' => type,
-        'to' => type == 'sms' ? payload['phone_number'] : payload['email_address'],
+        'user_number' => type == 'sms' ? payload['phone_number'] : payload['email_address'],
         'content' => message_content, # The test checks this field
         'template_id' => payload['template_id'],
         'personalisation' => payload['personalisation'],
