@@ -5,6 +5,7 @@ services:
       - "4567:4567"
     environment:
       - RACK_ENV=test
+      - GO_TEMPLATE_ID=go_template_id
     logging:
       options:
         mode: non-blocking

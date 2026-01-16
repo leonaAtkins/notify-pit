@@ -3,35 +3,60 @@ require 'time'
 
 module NotifyPit
   class Store
-    attr_reader :notifications, :inbound_sms
+    attr_reader :notifications, :messages
 
     def initialize
-      @notifications = {}
-      @inbound_sms = []
+      @notifications = {} # Stores "Input" (The 'Go' triggers)
+      @messages = []      # Stores "Output" (The replies to be polled)
     end
 
-    def add_notification(type, payload)
+    # EFFECTIVE OUTBOX: Stores generated replies (Credentials)
+    # This is what the test reads via /v2/received-text-messages
+    def add_message(type, payload)
       id = SecureRandom.uuid
 
-      # Extract data from JSON payload
-      template_id = payload['template_id']
-      personalisation = payload['personalisation'] || {}
-
-      # Determine username/password
-      user = personalisation['username'] || Generator.username
-      pass = personalisation['password'] || Generator.password
-
-      # Use the Generator logic
-      message_body = Generator.body(template_id, user, pass)
+      # 1. Content Logic: Injection OR Auto-Generation
+      if payload['content']
+        message_content = payload['content']
+      else
+        user = payload.dig('personalisation', 'username') || Generator.username
+        pass = payload.dig('personalisation', 'password') || Generator.password
+        message_content = Generator.body(payload['template_id'], user, pass)
+      end
 
       entry = {
         'id' => id,
         'type' => type,
         'to' => type == 'sms' ? payload['phone_number'] : payload['email_address'],
-        'body' => message_body,
+        'content' => message_content, # The test checks this field
+        'template_id' => payload['template_id'],
+        'personalisation' => payload['personalisation'],
+        'status' => 'received', # Terminology matches "received" endpoint
+        'created_at' => Time.now.utc.iso8601(6)
+      }
+
+      @messages << entry
+      entry
+    end
+
+    # EFFECTIVE INBOX: Stores incoming requests (Triggers)
+    # This is where the "Go" message lands
+    def add_notification(payload)
+      id = SecureRandom.uuid
+
+      # 2. Body Generation (Standard Notify behavior)
+      template_id = payload['template_id']
+      user = payload.dig('personalisation', 'username') || Generator.username
+      pass = payload.dig('personalisation', 'password') || Generator.password
+      body_text = Generator.body(template_id, user, pass)
+
+      entry = {
+        'id' => id,
+        'user_number' => payload['phone_number'] || payload['email_address'],
+        'notify_number' => 'GovWifi',
+        'body' => body_text,
         'template_id' => template_id,
-        'personalisation' => { 'username' => user, 'password' => pass },
-        'status' => 'delivered',
+        'personalisation' => payload['personalisation'],
         'created_at' => Time.now.utc.iso8601(6)
       }
 
@@ -39,22 +64,9 @@ module NotifyPit
       entry
     end
 
-    # Restored method to fix the NoMethodError
-    def add_inbound_sms(payload)
-      entry = {
-        'id' => SecureRandom.uuid,
-        'user_number' => payload['user_number'],
-        'notify_number' => payload['notify_number'],
-        'content' => payload['content'],
-        'created_at' => Time.now.utc.iso8601(6)
-      }
-      @inbound_sms << entry
-      entry
-    end
-
     def reset!
       @notifications = {}
-      @inbound_sms = []
+      @messages = []
     end
   end
 end
