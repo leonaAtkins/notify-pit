@@ -43,20 +43,20 @@ module NotifyPit
         DB.add_message('sms', request_payload)
       end
       json_res({
-        id: note['id'],
-        content: { body: note['body'], from_number: 'GovWifi' },
-        template: { id: note['template_id'], version: 1 }
-      }, 201)
+                 id: note['id'],
+                 content: { body: note['body'], from_number: 'GovWifi' },
+                 template: { id: note['template_id'], version: 1 }
+               }, 201)
     end
 
     post '/v2/notifications/email' do
       request_payload = JSON.parse(request.body.read)
       note = DB.add_notification(request_payload)
       json_res({
-        id: note['id'],
-        content: { body: note['body'], from_number: 'GovWifi' },
-        template: { id: note['template_id'], version: 1 }
-      }, 201)
+                 id: note['id'],
+                 content: { body: note['body'], from_number: 'GovWifi' },
+                 template: { id: note['template_id'], version: 1 }
+               }, 201)
     end
 
     get '/v2/notifications/:id' do
