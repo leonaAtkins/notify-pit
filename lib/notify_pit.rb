@@ -35,23 +35,28 @@ module NotifyPit
       request_payload = JSON.parse(request.body.read)
 
       # Pass the hash directly to the store
-      note = DB.add_notification('sms', request_payload)
-      # NOTE: = DB.add_notification('sms', JSON.parse(request.body.read))
+      note = DB.add_notification(request_payload)
+      trigger_id = ENV['GO_TEMPLATE_ID'] || 'go_template_id' # Set this in docker-compose if needed
+
+      if request_payload['template_id'] == trigger_id
+        puts "✨ [NotifyPit] 'Go' Message Detected. Generating user cred message"
+        DB.add_message('sms', request_payload)
+      end
       json_res({
-                 id: note['id'],
-                 content: { body: note['body'], from_number: 'GovWifi' },
-                 template: { id: note['template_id'], version: 1 }
-               }, 201)
+        id: note['id'],
+        content: { body: note['body'], from_number: 'GovWifi' },
+        template: { id: note['template_id'], version: 1 }
+      }, 201)
     end
 
     post '/v2/notifications/email' do
-      note = DB.add_notification('email', JSON.parse(request.body.read))
+      request_payload = JSON.parse(request.body.read)
+      note = DB.add_notification(request_payload)
       json_res({
-                 id: note['id'],
-                 content: { body: note['body'], subject: 'GovWifi details',
-                            html: "<p>#{note['body'].gsub("\n", '<br>')}</p>" },
-                 template: { id: note['template_id'], version: 1 }
-               }, 201)
+        id: note['id'],
+        content: { body: note['body'], from_number: 'GovWifi' },
+        template: { id: note['template_id'], version: 1 }
+      }, 201)
     end
 
     get '/v2/notifications/:id' do
@@ -60,7 +65,7 @@ module NotifyPit
     end
 
     get '/v2/received-text-messages' do
-      json_res({ 'received_text_messages' => DB.inbound_sms })
+      json_res({ 'received_text_messages' => DB.messages })
     end
 
     get '/mocker/messages' do
@@ -75,8 +80,7 @@ module NotifyPit
 
     # Management API (For Smoke Test Orchestration)
     post '/mocker/inbound-sms' do
-      msg = DB.add_inbound_sms(JSON.parse(request.body.read))
-
+      msg = DB.add_message('sms', JSON.parse(request.body.read))
       json_res(msg, 201)
     end
 
