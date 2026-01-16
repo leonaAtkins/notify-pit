@@ -6,7 +6,7 @@ gem 'rackup' # Required for Sinatra 3.0+ / Ruby 3.0+
 gem 'sinatra'
 
 group :test, :development do
-  gem 'faraday' # For testing the running service
+  gem 'faraday'
   gem 'rack-test'
   gem 'rake'
   gem 'rspec'
