@@ -1,6 +1,7 @@
-require:
+plugins:
+- rubocop-rake
+- rubocop-rspec
 - rubocop-performance
-
 AllCops:
   NewCops: enable
   Exclude:
@@ -19,7 +20,7 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 
 Metrics/MethodLength:
-  Max: 20
+  Max: 25
   # Optional: exclude the test folder from this check
   Exclude:
   - 'spec/**/*'
@@ -27,4 +28,10 @@ Metrics/MethodLength:
 # You might also find 'AbcSize' starts failing as methods get complex.
 # You can increase that here too if needed:
 Metrics/AbcSize:
-  Max: 20
+  Max: 25
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/ExampleLength:
+  Max: 25

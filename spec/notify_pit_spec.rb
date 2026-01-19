@@ -5,7 +5,7 @@ RSpec.describe 'NotifyPit' do
     post path, hash.to_json, { 'CONTENT_TYPE' => 'application/json' }
   end
 
-  before(:each) do
+  before do
     delete '/mocker/reset'
   end
 
