@@ -25,12 +25,12 @@ module NotifyPit
       end
       # 2 normalise phone number format for sms messages
       raw_number = payload['phone_number']
-      user_number = raw_number.delete("+").sub(/^0/, "44")
+      user_number = raw_number.delete('+').sub(/^0/, '44')
 
       entry = {
         'id' => id,
         'type' => type,
-        'user_number' => user_number
+        'user_number' => user_number,
         'content' => message_content, # The test checks this field
         'template_id' => payload['template_id'],
         'personalisation' => payload['personalisation'],
